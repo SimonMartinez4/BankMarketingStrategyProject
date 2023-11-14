@@ -26,11 +26,10 @@ if page == pages[0] :
     st.write("#### 1. Analyse de la variable cible")
     
     # Création du graphique de la variable cible avec Plotly et personnalisation
-    pie_y = px.pie(df, names="deposit", title="Distribution de la variable cible deposit")
-
-    # Personnalisation des couleurs
-    couleurs = ['#FF6347', '#77B5FE']  # Saumon et bleu ciel
-    pie_y.update_traces(textinfo='label+percent', pull=[0.2, 0], textposition='inside', marker=dict(colors=['#FF6347', '#77B5FE']))
+    pie_y = px.pie(df, names="deposit", title="Distribution de la variable cible deposit", color='deposit',
+    color_discrete_map={'yes': 'salmon', 'no': 'skyblue'},
+    labels={'yes': 'Oui', 'no': 'Non'},
+    hole=0.4)
 
     # Affichage du graphique
     st.plotly_chart(pie_y)
@@ -77,31 +76,15 @@ if page == pages[0] :
     
     # Ajout d'un encadré déroulant "Ce qu'on peut noter :"
     with st.expander("Ce qu'on peut noter :"):
-        st.write(
-            """
-            Concernant la variable duration, les valeurs situées au-dessus de 3000 secondes seront considérées comme aberrantes et les enregistrements correspondant seront supprimés pour la phase de machine learning.
-            
-            Pour la variable campaign, nous avons considérés qu'un nombre de contacts supérieur à 10 est aberrant et les lignes correspondantes seront donc supprimées pour la suite de l'études.
-            
-            Les unknown de job représentent quant à eux 0.6% des valeurs. Au vu de leurs faibles quantités, nous prenons la décision de les remplacer par le mode (‘management’) dans le dataset. 
-            
-            Sur la variable education, les ‘unknown’ représentent environ 500 individus soit 4% de la population. Nous pouvons imaginer que ce sont des personnes n’ayant pas voulu donner l’information sur leurs niveaux d’étude. Pour cette catégorie nous remplaceront les unknown par le mode.
-            
-            Concernant contact, les unknown de cette variable représentent 21% de la population de données. Cette variable ne nous apporte pas d’information sur la souscription. Nous la supprimerons pour la suite de l’étude.
-            
-            On constate la très forte présence des unknown dans poutcome, représentant 75% des valeurs. Nous la considérerons comme une catégorie à part entière et la regrouperont avec la catégorie ‘other’.
-            
-            On remarque que les valeurs par défaut « -1 » pour pdays et « 0 » pour previous faussent la représentation des graphiques car elles « tirent » les intervalles vers eux.
-
-            On remarque notamment pour la variable pdays moins d’outliers du fait que l’interquartile Q3 est par défaut moins élevé car il y a moins de données tirant vers la valeur « -1 ».
-
-            Pour la variable previous on constate une concentration plus évidente entre 1 et 5 et un nombre d’outliers à peu près exact au graphique prenant en compte les clients n’ayant pas participé à la précédente campagne. Cela s’explique par des valeurs « cohérentes » assez proches de la valeur par défaut « 0 » attribuée aux clients n’ayant pas participé à la précédente campagne.
-
-            Pour conclure sur les outliers de ces deux variables nous avons fait le choix de garder ceux de la variable pdays car il s’agit de valeurs « possibles ».
-    
-            Cependant pour la variable previous certains outliers ressemblent bien plus à de fausses informations, nous avons pris la décision de les remplacer par la moyenne de la variable pour les valeurs supérieures ou égales à 10.
-    """
-    )
+        st.markdown("- duration : les valeurs supérieures à 3000 secondes considérées comme valeurs aberrantes")
+        st.markdown("- campaign : les valeurs supérieures à 10 sont aberrantes")
+        st.markdown("- job : modalité unknown pour 0.6% des valeurs ; elle sera remplacée par le mode")
+        st.markdown("- education : modalité unknown pour 4% des valeurs ; elle sera remplacée par le mode")
+        st.markdown("- contact : cette variable ne comporte pas d'information utile ; elle sera supprimée")
+        st.markdown("- poutcome : modalité unknown pour 75% des valeurs ; signifie l'absence de sollicitation lors d'une campagne antérieure ; sera remplacé par other")
+        st.markdown("- pdays et previous : les modalités respectives -1 et 0 signifient l'absence de sollicitation lors d'une campagne antérieure")
+        st.markdown("- pdays et previous : les modalités respectives -1 et 0 signifient l'absence de sollicitation lors d'une campagne antérieure")
+        st.markdown("- previous : valeurs supérieures à 10 considérées comme valeurs aberrantes")
     
     # Analyse multivariée
     st.write("#### 3. Analyse en fonction de la variable cible")
@@ -148,20 +131,14 @@ if page == pages[0] :
     
     # Ajout d'un encadré déroulant "Ce qu'on peut noter :"
     with st.expander("Ce qu'on peut noter :"):
-        st.write(
-            """
-            Plus la durée de l'appel augmente, plus la proportion de client souscrivant au dépôt à terme est importante.
-            
-            Il en va de même lorsqu'il s'agit d'une clientèle qui n'a pas de prêt immobilier en cours.
-            
-            Il semblerait que les clients âgés de plus de 60 ans souscrivent plus facilement.
-            
-            Les managers, les étudiants et les retraités sont les catégories professionnelles pour lesquelles la modalité 'yes' à la variable deposit est la mieux représentée.
-            
-            Les célibataires sont ceux qui souscrivent le plus en proportion de leur représentation.
-            
-            """
-            )
+        st.markdown("- age : différence significative de la représentation des personnes âgées de plus de 60 ans entre les clients souscripteurs et les autres")
+        st.markdown("- housing : clients souscripteurs surreprésentés pour la modalité no par rapport à yes")
+        st.markdown("- duration : durées d'appel plus longue chez les clients souscripteurs")
+        st.markdown("- marital : les célibataires sont plus souvent souscripteurs")
+        st.markdown("- job : étudiants, retraités, managers et chômeurs souscrivent davantage")
+        st.markdown("- education : les clients ayant fait des études supérieures souscrivent davantage")
+        st.markdown("- poutcome : les clients ayant souscrit lors d'une campagne précédente souscrivent davantage")
+
     # Matrice de correlation
     st.write("#### 4. Matrice de correlation")
     
@@ -181,8 +158,8 @@ if page == pages[0] :
     st.write("#### 5. Tests d'indépendance entre variables")
 
     # Sélection des deux variables pour le test
-    variable1 = st.selectbox("Sélectionnez la première variable", df.columns[:-1])
-    variable2 = st.selectbox("Sélectionnez la deuxième variable", df.columns[:-1])
+    variable1 = st.selectbox("Sélectionnez la première variable", df.columns)
+    variable2 = st.selectbox("Sélectionnez la deuxième variable", df.columns)
 
     # Effectuer le test d'indépendance approprié en fonction du type de variables
     if df[variable1].dtype in ['int64', 'float64'] and df[variable2].dtype in ['int64', 'float64']:
@@ -277,21 +254,11 @@ if page == pages[0] :
     
     # Ajout d'un encadré déroulant "Pourquoi ce graphique ?"
     with st.expander("Pourquoi ce graphique ?"):
-        st.write(
-    """
-    Un premier type de clients (en haut) pourrait être identifié comme *célibataire diplômé*. Ils ont plutôt fait des études supérieures, occupent plutôt des postes de managers, sont plutôt célibataires et sans emprunts immobiliers.
-
-    Un deuxième type (en bas) pourrait être qualifié comme *stable et en couple*. Ils sont plutôt d’un niveau d’éducation du secondaire, mariés, avec un emprunt immobilier, plutôt sans autre emprunt et n’ayant plutôt jamais fait défaut.
-
-    Le troisième type est plus hétéroclite. Il semble à la fois réunir des situations précaires, des parcours accidentés et une certaine approche d’une classe moyenne.
-
-    À l’intérieur, on retrouve un sous-groupe de concomitances très proches décrivant potentiellement une situation précaire : ayant plutôt déjà fait défaut ; occupant plutôt soit le métier d’agent de ménage soit une situation d’étudiant, d’auto-entrepreneur, d’entrepreneur ou de sans emploi.
-
-    Dans le reste du groupe, à des concomitances plus faibles (plus à gauche dans l’arbre), on observe des caractéristiques qu’on pourrait plutôt attribuer à une certaine forme de classe moyenne : ayant plutôt déjà contracté un crédit auto, une crédit pour un projet ou un crédit à la consommation ; occupant plutôt des métiers d’ouvrier, de technicien, de postes administratifs ou dans les services ; on retrouve aussi des situations de retraité ; on voit des niveaux d’éducation plutôt faibles ; des personnes ayant pu connaître un divorce.
-
-    Ces concomitances nous permettent d’identifier des interactions entre les variables et ainsi de dessiner des tendances qu’il peut exister au sein du dataset. Il ne s’agit pas de groupes fermés mais plutôt de stéréotypes qu’on peut ressortir à partir des données.
-    """
-    )
+        st.markdown("Trouver des concommitances entre les variables catégorielles pour établir des profils, des stéréotypes.")
+        st.markdown("- Type 1, 'célibataire diplômé' : études supérieures, managers, célibataires et sans emprunts immobiliers")
+        st.markdown("- Type 2, 'stable et marié : niveau d’éducation du secondaire, mariés, avec un emprunt immobilier, sans autre emprunt et n’ayant jamais fait défaut")
+        st.markdown("- Type 3a, 'situation plus fragile ? a déjà fait défaut, agent de ménage, étudiant, auto-entrepreneur, sans emploi'")
+        st.markdown("- Type 3b, 'classe moyenne ? a déjà contracté un crédit autre, ouvriers, techniciens, postes administratifs ou dans les services, retraités, niveaux d’éducation plutôt faibles, personnes ayant pu connaître un divorce")
     
     # Définir les tranches d'âge
     age_bins = [0, 30, 40, 50, 60, float('inf')]
@@ -304,13 +271,22 @@ if page == pages[0] :
     st.write("#### 2. Répartition de 'deposit' : quel est le client idéal ? ")
 
     # Sélection des variables pour filtrer (avec st.multiselect pour permettre plusieurs sélections)
-    selected_job = st.multiselect("Sélectionnez le job", df['job'].unique(), default=df['job'].unique())
-    selected_marital = st.multiselect("Sélectionnez le marital", df['marital'].unique(), default=df['marital'].unique())
-    selected_education = st.multiselect("Sélectionnez l'éducation", df['education'].unique(), default=df['education'].unique())
-    selected_housing = st.multiselect("Sélectionnez le housing", df['housing'].unique(), default=df['housing'].unique())
-    selected_loan = st.multiselect("Sélectionnez le loan", df['loan'].unique(), default=df['loan'].unique())
-    selected_poutcome = st.multiselect("Sélectionnez le poutcome", df['poutcome'].unique(), default=df['poutcome'].unique())
-    selected_age_group = st.multiselect("Sélectionnez la tranche d'âge", age_labels, default=age_labels)
+    # Création de trois colonnes
+    col1, col2, col3 = st.columns(3)
+
+    # Ajout de SelectBox à chaque colonne
+    with col1:
+        selected_job = st.multiselect("Sélectionnez le job", df['job'].unique(), default=df['job'].unique())
+        selected_education = st.multiselect("Sélectionnez l'éducation", df['education'].unique(), default=df['education'].unique())
+
+    with col2:
+        selected_housing = st.multiselect("Sélectionnez le housing", df['housing'].unique(), default=df['housing'].unique())
+        selected_marital = st.multiselect("Sélectionnez le marital", df['marital'].unique(), default=df['marital'].unique())
+        selected_loan = st.multiselect("Sélectionnez le loan", df['loan'].unique(), default=df['loan'].unique())
+
+    with col3:
+        selected_poutcome = st.multiselect("Sélectionnez le poutcome", df['poutcome'].unique(), default=df['poutcome'].unique())
+        selected_age_group = st.multiselect("Sélectionnez la tranche d'âge", age_labels, default=age_labels)
 
     # Filtrer les données en fonction des sélections
     filtered_data = df[
@@ -341,5 +317,24 @@ if page == pages[0] :
     st.plotly_chart(fig)
     
     # Afficher le nombre d'enregistrements sélectionnés
-    st.write(f"##### Nombre d'enregistrements sélectionnés : {len(filtered_data)}")
     st.write(f"##### Proportion d'enregistrements sélectionnés : {round((len(filtered_data)/len(df)*100),2)} %")
+    
+    # Filtrer selon la relation client
+    st.write("#### 3. Répartition de 'deposit' : quelle est la relation client idéale ? ")
+    
+    # Filtrer les enregistrements indésirables
+    df = df[(df['duration'] <= 3000) & (df['campaign'] <= 10)]
+    
+    # Sidebar avec des curseurs pour les intervalles
+    duration_range = st.slider('Sélectionner la plage de duration', min(df['duration']), max(df['duration']), (min(df['duration']), max(df['duration'])))
+    campaign_range = st.slider('Sélectionner la plage de campaign', min(df['campaign']), max(df['campaign']), (min(df['campaign']), max(df['campaign'])))
+
+    # Filtrer le DataFrame en fonction des intervalles sélectionnés
+    filtered_df = df[(df['duration'] >= duration_range[0]) & (df['duration'] <= duration_range[1]) & (df['campaign'] >= campaign_range[0]) & (df['campaign'] <= campaign_range[1])]
+
+    # Créer un graphique pie interactif avec Plotly Express
+    fig = px.pie(filtered_df, names='deposit', title='Répartition des dépôts', color='deposit', color_discrete_map={'yes': 'salmon', 'no': 'skyblue'}, labels={'yes': 'Oui', 'no': 'Non'}, hole=0.4)
+    st.plotly_chart(fig)
+    
+    # Afficher le nombre d'enregistrements sélectionnés
+    st.write(f"##### Proportion d'enregistrements sélectionnés : {round((len(filtered_df)/len(df)*100),2)} %")
